@@ -20,15 +20,16 @@ const config = {
 const file_path = `Music/${config.name}.mp3`;
 const command = ffmpeg(config.m3u8_path)
     .on('start', () => { console.log('Processing started !'); })
-    //.on('progress', (progress) => { console.log('Processing: ' + Math.floor(progress.percent) + '% done'); })
     .on('progress', (progress) => {console.log('Timemark: ' + progress.timemark);})
     .on('end', () => { addCover(); })
     .on('error', (err) => { console.log('An error occurred: ' + err.message); })
     .audioCodec('libmp3lame')
     .audioBitrate(config.bitrate)
-    .mergeToFile('temp.mp3', './Music');
+    .mergeToFile('temp.mp3', './Music')
     
-
+const stop = (audio) => {
+   return audio.ffmpegProc.stdin.write('q');
+}
 
 
 function addCover() {
@@ -37,4 +38,10 @@ function addCover() {
         console.log(`Processing finished !\nfile path : ${encodeURI(file_path)}`);
     });
 }
+
+
+setTimeout(() => {
+    // safely end the ffmpeg process without destroying the file.
+    stop(command);
+  }, 10000);
 
