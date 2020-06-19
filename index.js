@@ -3,32 +3,39 @@ const ffmpeg = require('fluent-ffmpeg');
 const { exec } = require('child_process');
 
 var today = new Date()
+var min = String(today.getMinutes())
 var hour = String(today.getHours())
 var dd = String(today.getDate()).padStart(2, '0');
 var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
 var yyyy = today.getFullYear();
-today = dd+mm+yyyy+'-'+hour;
+today = dd+mm+yyyy+'-'+hour+'_'+min;
 
+var stream = null
 
 const config = {
     "cover": "./assets/radiocn.jpg",
-    "name": 'track_'+today,
+    "name": today,
     "m3u8_path": "https://rdamchp1-lh.akamaihd.net/i/rdamchp_1_0@193678/master.m3u8",
-    "bitrate": "320"
+    "bitrate": "96"
 };
 
 const file_path = `Music/${config.name}.mp3`;
-const command = ffmpeg(config.m3u8_path)
+
+
+stream = ffmpeg(config.m3u8_path)
+        //.duration('1:00')
     .on('start', () => { console.log('Processing started !'); })
-    //.on('progress', (progress) => { console.log('Processing: ' + Math.floor(progress.percent) + '% done'); })
     .on('progress', (progress) => {console.log('Timemark: ' + progress.timemark);})
     .on('end', () => { addCover(); })
     .on('error', (err) => { console.log('An error occurred: ' + err.message); })
     .audioCodec('libmp3lame')
     .audioBitrate(config.bitrate)
-    .mergeToFile('temp.mp3', './Music');
-    
+    .mergeToFile('temp.mp3', './Music')
 
+    
+const stop = (audio) => {
+   return audio.ffmpegProc.stdin.write('q');
+}
 
 
 function addCover() {
@@ -38,3 +45,10 @@ function addCover() {
     });
 }
 
+
+setTimeout(() => {
+    // safely end the ffmpeg process without destroying the file.
+    
+    stop(stream)
+    
+  }, 40000);
