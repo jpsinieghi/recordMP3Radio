@@ -1,4 +1,4 @@
-//https://github.com/akhil-kn/node-m3u8-to-mp3
+//Linux
 const ffmpeg = require('fluent-ffmpeg');
 const { exec } = require('child_process');
 var schedule = require('node-schedule');
